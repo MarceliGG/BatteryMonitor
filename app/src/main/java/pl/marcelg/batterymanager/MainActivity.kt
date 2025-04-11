@@ -2,6 +2,7 @@ package pl.marcelg.batterymanager
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
@@ -39,10 +40,18 @@ import androidx.core.content.ContextCompat.getSystemService
 import pl.marcelg.batterymanager.ui.theme.BatteryMonitorTheme
 
 class MainActivity : ComponentActivity() {
+    private lateinit var batteryReceiver: BatteryBroadcastReceiver
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        createNotificationChannel(this)
+        batteryReceiver = BatteryBroadcastReceiver()
+        val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+        registerReceiver(batteryReceiver, filter)
+
+
+
+//        createNotificationChannel(this)
 
         enableEdgeToEdge()
         setContent {
@@ -84,24 +93,24 @@ fun BatteryPercentageDisplay(context: Context) {
     Text(text = if (batteryChargerState) "Charging" else "Not charging", fontSize = 18.sp)
 }
 
-const val CHANNEL_ID = "general"
-const val LOW_ID = 0
-
-fun createNotificationChannel(context: Context) {
-    val name = "General"
-    val descriptionText = "Main channel"
-    val importance = NotificationManager.IMPORTANCE_DEFAULT
-    val mChannel = NotificationChannel(CHANNEL_ID, name, importance)
-    mChannel.description = descriptionText
-    // Register the channel with the system. You can't change the importance
-    // or other notification behaviors after this.
-    val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager;
-    notificationManager.createNotificationChannel(mChannel)
-}
+//const val CHANNEL_ID = "general"
+//const val LOW_ID = 0
+//
+//fun createNotificationChannel(context: Context) {
+//    val name = "General"
+//    val descriptionText = "Main channel"
+//    val importance = NotificationManager.IMPORTANCE_DEFAULT
+//    val mChannel = NotificationChannel(CHANNEL_ID, name, importance)
+//    mChannel.description = descriptionText
+//    // Register the channel with the system. You can't change the importance
+//    // or other notification behaviors after this.
+//    val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager;
+//    notificationManager.createNotificationChannel(mChannel)
+//}
 
 class BatteryReceiver(private val onBatteryLevelChanged: (Int, Boolean) -> Unit) :
     BroadcastReceiver() {
-    private var notifLowSent = false;
+//    private var notifLowSent = false;
 
     override fun onReceive(context: Context, intent: Intent?) {
         val level: Int = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
@@ -109,30 +118,28 @@ class BatteryReceiver(private val onBatteryLevelChanged: (Int, Boolean) -> Unit)
         val charging: Int = intent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) ?: -1
         if (level != -1 && scale != -1) {
             val batteryPct = (level / scale.toFloat() * 100).toInt()
-            if (batteryPct <= 20) {
-                if (!notifLowSent) {
-
-//                    context?.let {
-                    var builder = NotificationCompat.Builder(
-                        context,
-                        CHANNEL_ID
-                    ).setSmallIcon(R.drawable.ic_stat_battery_alert)
-                        .setContentTitle("Low Battery!!!!!!")
-                        .setContentText("Battery fell to 20%!!!!!")
-                    with(NotificationManagerCompat.from(context)) {
-                        notify(LOW_ID, builder.build())
-                    }
+//            if (batteryPct <= 20) {
+//                if (!notifLowSent) {
+//
+//                    var builder = NotificationCompat.Builder(
+//                        context,
+//                        CHANNEL_ID
+//                    ).setSmallIcon(R.drawable.ic_stat_battery_alert)
+//                        .setContentTitle("Low Battery!!!!!!")
+//                        .setContentText("Battery fell to 20%!!!!!")
+//                    with(NotificationManagerCompat.from(context)) {
+//                        notify(LOW_ID, builder.build())
 //                    }
-
-                    println("low");
-                    notifLowSent = true;
-                }
-            } else {
-                with(NotificationManagerCompat.from(context)) {
-                    cancel(LOW_ID)
-                }
-                notifLowSent = false;
-            }
+//
+//                    println("low");
+//                    notifLowSent = true;
+//                }
+//            } else {
+//                with(NotificationManagerCompat.from(context)) {
+//                    cancel(LOW_ID)
+//                }
+//                notifLowSent = false;
+//            }
             onBatteryLevelChanged(batteryPct, charging != 0)
         }
     }

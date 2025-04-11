@@ -17,14 +17,6 @@ class BatteryBroadcastReceiver : BroadcastReceiver() {
     private var notifLowSent = false;
     private var notifFullSent = false;
 
-    //
-//    fun createNotificationChannel(context: Context) {
-//        val name = "General"
-//        val importance = NotificationManager.IMPORTANCE_DEFAULT
-//        val mChannel = NotificationChannel(CHANNEL_ID, name, importance)
-//        val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager;
-//        notificationManager.createNotificationChannel(mChannel)
-//    }
     override fun onReceive(context: Context, intent: Intent?) {
         if (intent != null) {
             val level: Int = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
@@ -34,7 +26,6 @@ class BatteryBroadcastReceiver : BroadcastReceiver() {
                 val batteryPct = (level / scale.toFloat() * 100).toInt()
                 if (batteryPct <= 40) {
                     if (!notifLowSent) {
-//                    createNotificationChannel(context)
                         sendNotification(context, "Low Battery!!!!!!", "Battery fell to 20%!!!!!", LOW_ID)
                         notifLowSent = true;
                     }

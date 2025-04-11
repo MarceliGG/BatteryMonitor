@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">BatteryMonitor</string>
+    <string name="low_title">Battery Low!</string>
+    <string name="low_text">Battery fell to 20%!!!!!</string>
+    <string name="full_title">Battery Full</string>
+    <string name="full_text">You can unplug your device.</string>
+    <string name="charging">Charging</string>
+    <string name="not_charging">Not charging</string>
 </resources>

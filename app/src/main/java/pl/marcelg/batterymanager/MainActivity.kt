@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.getString
 import pl.marcelg.batterymanager.ui.theme.BatteryMonitorTheme
 
 class MainActivity : ComponentActivity() {
@@ -74,7 +75,7 @@ fun BatteryPercentageDisplay(context: Context) {
         }
     }
     Text(text = "$batteryPercentage%", fontSize = 32.sp)
-    Text(text = if (batteryChargerState) "Charging" else "Not charging", fontSize = 18.sp)
+    Text(text = getString(context, if (batteryChargerState) R.string.charging else R.string.not_charging), fontSize = 18.sp)
 }
 
 class BatteryReceiver(private val onBatteryLevelChanged: (Int, Boolean) -> Unit) :

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.BatteryManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat.getString
 
 
 class BatteryBroadcastReceiver : BroadcastReceiver() {
@@ -28,8 +29,6 @@ class BatteryBroadcastReceiver : BroadcastReceiver() {
                     if (!notifLowSent) {
                         sendNotification(
                             context,
-                            "Low Battery!!!!!!",
-                            "Battery fell to 20%!!!!!",
                             LOW_ID
                         )
                         notifLowSent = true;
@@ -44,8 +43,6 @@ class BatteryBroadcastReceiver : BroadcastReceiver() {
                     if (!notifFullSent) {
                         sendNotification(
                             context,
-                            "Battery Full",
-                            "Your battery is now fully charged",
                             FULL_ID
                         )
                         notifFullSent = true;
@@ -62,11 +59,23 @@ class BatteryBroadcastReceiver : BroadcastReceiver() {
 
     @SuppressLint("MissingPermission")
 
-    private fun sendNotification(context: Context, title: String, text: String, id: Int) {
+    private fun sendNotification(context: Context, id: Int) {
         val notificationIntent = Intent(
             context,
             MainActivity::class.java
         )
+        val text = when (id) {
+            LOW_ID -> getString(context, R.string.low_text)
+            FULL_ID -> getString(context, R.string.full_text)
+            else -> "err"
+        }
+
+        val title = when (id) {
+            LOW_ID -> getString(context, R.string.low_title)
+            FULL_ID -> getString(context, R.string.full_title)
+            else -> "err"
+        }
+
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         val intent = PendingIntent.getActivity(
             context, 0,

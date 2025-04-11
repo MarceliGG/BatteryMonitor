@@ -26,7 +26,12 @@ class BatteryBroadcastReceiver : BroadcastReceiver() {
                 val batteryPct = (level / scale.toFloat() * 100).toInt()
                 if (batteryPct <= 40) {
                     if (!notifLowSent) {
-                        sendNotification(context, "Low Battery!!!!!!", "Battery fell to 20%!!!!!", LOW_ID)
+                        sendNotification(
+                            context,
+                            "Low Battery!!!!!!",
+                            "Battery fell to 20%!!!!!",
+                            LOW_ID
+                        )
                         notifLowSent = true;
                     }
                 } else {
@@ -37,7 +42,12 @@ class BatteryBroadcastReceiver : BroadcastReceiver() {
                 }
                 if (charging > 0 && batteryPct >= 100) {
                     if (!notifFullSent) {
-                        sendNotification(context, "Battery Full", "Your battery is now fully charged", FULL_ID)
+                        sendNotification(
+                            context,
+                            "Battery Full",
+                            "Your battery is now fully charged",
+                            FULL_ID
+                        )
                         notifFullSent = true;
                     }
                 } else {

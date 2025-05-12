@@ -20,39 +20,37 @@ class BatteryBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent?) {
         if (intent != null) {
-            val level: Int = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
-            val scale: Int = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
-            val charging: Int = intent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) ?: -1
-            if (level != -1 && scale != -1) {
-                val batteryPct = (level / scale.toFloat() * 100).toInt()
-                if (batteryPct <= 40) {
-                    if (!notifLowSent) {
-                        sendNotification(
-                            context,
-                            LOW_ID
-                        )
-                        notifLowSent = true;
-                    }
-                } else {
-                    with(NotificationManagerCompat.from(context)) {
-                        cancel(LOW_ID)
-                    }
-                    notifLowSent = false;
+            val level: Int = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0)
+            val scale: Int = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 0)
+            val charging: Int = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0)
+            val batteryPct = (level / scale.toFloat() * 100).toInt()
+            if (batteryPct <= 20) {
+                if (!notifLowSent) {
+                    sendNotification(
+                        context,
+                        LOW_ID
+                    )
+                    notifLowSent = true;
                 }
-                if (charging > 0 && batteryPct >= 100) {
-                    if (!notifFullSent) {
-                        sendNotification(
-                            context,
-                            FULL_ID
-                        )
-                        notifFullSent = true;
-                    }
-                } else {
-                    with(NotificationManagerCompat.from(context)) {
-                        cancel(FULL_ID)
-                    }
-                    notifFullSent = false;
+            } else {
+                with(NotificationManagerCompat.from(context)) {
+                    cancel(LOW_ID)
                 }
+                notifLowSent = false;
+            }
+            if (charging != 0 && batteryPct >= 100) {
+                if (!notifFullSent) {
+                    sendNotification(
+                        context,
+                        FULL_ID
+                    )
+                    notifFullSent = true;
+                }
+            } else {
+                with(NotificationManagerCompat.from(context)) {
+                    cancel(FULL_ID)
+                }
+                notifFullSent = false;
             }
         }
     }

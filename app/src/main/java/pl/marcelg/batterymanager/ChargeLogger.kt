@@ -62,5 +62,5 @@ fun getBatteryLogs(context: Context): List<LogEntry> {
     } catch (e: Exception) {
         e.printStackTrace()
     }
-    return logs
+    return logs.reversed()
 }

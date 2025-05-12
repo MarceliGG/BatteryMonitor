@@ -6,22 +6,16 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Bundle
-import android.view.View
-import android.view.WindowInsetsController
-import android.view.WindowManager
-import android.widget.Scroller
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -33,7 +27,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.getString
@@ -41,6 +34,7 @@ import pl.marcelg.batterymanager.ui.theme.BatteryMonitorTheme
 
 class MainActivity : ComponentActivity() {
     private lateinit var batteryReceiver: BatteryBroadcastReceiver
+    private lateinit var chargerReceiver: ChargerBroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,21 +43,18 @@ class MainActivity : ComponentActivity() {
         val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         registerReceiver(batteryReceiver, filter)
 
+        chargerReceiver = ChargerBroadcastReceiver()
+        val filter1 = IntentFilter()
+        filter1.addAction(Intent.ACTION_POWER_CONNECTED)
+        filter1.addAction(Intent.ACTION_POWER_DISCONNECTED)
+        registerReceiver(chargerReceiver, filter1)
 
-        window.apply {
-            addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
-            decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        }
-        
         setContent {
             BatteryMonitorTheme {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding(),
+                        .fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     BatteryPercentageDisplay(this@MainActivity)
@@ -81,13 +72,13 @@ fun LogDisplay(context: Context) {
         onClick = {
             logs = getBatteryLogs(context)
         }
-    ) { Text("Refresh") }
+    ) { Text("Refresh", color = MaterialTheme.colorScheme.onPrimary) }
     LazyColumn {
         items(logs) { item ->
             Row {
                 Text(
                     item.timeStamp,
-                    color = Color(0xFF454545),
+                    color = MaterialTheme.colorScheme.secondary,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(end = 6.dp)
                 )
@@ -98,7 +89,8 @@ fun LogDisplay(context: Context) {
                             "string",
                             context.packageName
                         )
-                    )
+                    ),
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -123,12 +115,16 @@ fun BatteryPercentageDisplay(context: Context) {
             context.unregisterReceiver(batteryReceiver.value)
         }
     }
-    Text(text = "$batteryPercentage%", fontSize = 32.sp)
+    Text(
+        text = "$batteryPercentage%", fontSize = 32.sp,
+        color = MaterialTheme.colorScheme.onBackground
+    )
     Text(
         text = getString(
             context,
             if (batteryChargerState) R.string.charging else R.string.not_charging
-        ), fontSize = 18.sp
+        ), fontSize = 18.sp,
+        color = MaterialTheme.colorScheme.onBackground
     )
 }
 
@@ -138,7 +134,7 @@ class BatteryReceiver(private val onBatteryLevelChanged: (Int, Boolean) -> Unit)
     override fun onReceive(context: Context, intent: Intent?) {
         val level: Int = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
         val scale: Int = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
-        val charging: Int = intent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) ?: -1
+        val charging: Int = intent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0
         if (level != -1 && scale != -1) {
             val batteryPct = (level / scale.toFloat() * 100).toInt()
             onBatteryLevelChanged(batteryPct, charging != 0)

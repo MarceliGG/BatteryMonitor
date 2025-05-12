@@ -6,12 +6,22 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Bundle
+import android.view.View
+import android.view.WindowInsetsController
+import android.view.WindowManager
+import android.widget.Scroller
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -23,6 +33,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.getString
 import pl.marcelg.batterymanager.ui.theme.BatteryMonitorTheme
@@ -38,9 +50,14 @@ class MainActivity : ComponentActivity() {
         registerReceiver(batteryReceiver, filter)
 
 
+        window.apply {
+            addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
-
-        enableEdgeToEdge()
+            decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        }
+        
         setContent {
             BatteryMonitorTheme {
                 Column(
@@ -50,7 +67,39 @@ class MainActivity : ComponentActivity() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     BatteryPercentageDisplay(this@MainActivity)
+                    LogDisplay(this@MainActivity)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun LogDisplay(context: Context) {
+    var logs by remember { mutableStateOf(getBatteryLogs(context)) }
+    Button(
+        onClick = {
+            logs = getBatteryLogs(context)
+        }
+    ) { Text("Refresh") }
+    LazyColumn {
+        items(logs) { item ->
+            Row {
+                Text(
+                    item.timeStamp,
+                    color = Color(0xFF454545),
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(end = 6.dp)
+                )
+                Text(
+                    context.getString(
+                        context.resources.getIdentifier(
+                            "event_type_${item.eventType}",
+                            "string",
+                            context.packageName
+                        )
+                    )
+                )
             }
         }
     }
@@ -75,7 +124,12 @@ fun BatteryPercentageDisplay(context: Context) {
         }
     }
     Text(text = "$batteryPercentage%", fontSize = 32.sp)
-    Text(text = getString(context, if (batteryChargerState) R.string.charging else R.string.not_charging), fontSize = 18.sp)
+    Text(
+        text = getString(
+            context,
+            if (batteryChargerState) R.string.charging else R.string.not_charging
+        ), fontSize = 18.sp
+    )
 }
 
 class BatteryReceiver(private val onBatteryLevelChanged: (Int, Boolean) -> Unit) :

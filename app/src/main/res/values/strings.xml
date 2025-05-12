@@ -6,4 +6,6 @@
     <string name="full_text">You can unplug your device.</string>
     <string name="charging">Charging</string>
     <string name="not_charging">Not charging</string>
+    <string name="event_type_PLUGGED">Plugged in</string>
+    <string name="event_type_UNPLUGGED">Unplugged</string>
 </resources>
